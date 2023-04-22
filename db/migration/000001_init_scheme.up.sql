@@ -1,45 +1,43 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE images (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+    id bigserial PRIMARY KEY,
     url varchar(500) NOT NULL
 );
 
 CREATE TABLE users (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
-  first_name VARCHAR(50),
-  last_name VARCHAR(50),
+  id bigserial PRIMARY KEY,
   email VARCHAR(100) UNIQUE NOT NULL,
+  full_name VARCHAR(50),
   hashed_password VARCHAR(100) NOT NULL,
   city VARCHAR(50),
   state VARCHAR(50),
   country VARCHAR(50),
-  image_id uuid REFERENCES images(id),
+  image_id bigint REFERENCES images(id),
   created_at timestamptz NOT NULL DEFAULT (now()),
   updated_at TIMESTAMP
 );
 
 CREATE TABLE pets (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+    id bigserial PRIMARY KEY,
     name varchar(50) NOT NULL,
     about text,
-    user_id uuid REFERENCES users(id) NOT NULL,
+    user_id bigint REFERENCES users(id) NOT NULL,
     age integer NOT NULL,
     gender varchar(20) NOT NULL,
     pet_type varchar(50) NOT NULL,
     breed varchar(50),
-    image_id uuid REFERENCES images(id),
+    image_id bigint REFERENCES images(id),
     medical_condition varchar(50),
     created_at timestamptz NOT NULL DEFAULT (now()),
     updated_at TIMESTAMP
 );
 
 CREATE TABLE posts (
-    id uuid PRIMARY KEY  DEFAULT uuid_generate_v4() NOT NULL,
+    id bigserial PRIMARY KEY,
     title varchar(100),
     body text,
-    user_id uuid REFERENCES users(id) NOT NULL,
-    image_id uuid REFERENCES images(id),
+    user_id bigint REFERENCES users(id) NOT NULL,
+    image_id bigint REFERENCES images(id),
     status varchar(20),
     likes_count integer NOT NULL DEFAULT 0 CHECK (likes_count >= 0),
     created_at timestamptz NOT NULL DEFAULT (now()),
@@ -47,9 +45,9 @@ CREATE TABLE posts (
 );
 
 CREATE TABLE likes (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
-    liked_post_id uuid REFERENCES posts(id) NOT NULL,
-    user_id uuid REFERENCES users(id) NOT NULL,
+    id bigserial PRIMARY KEY,
+    liked_post_id bigint REFERENCES posts(id) NOT NULL,
+    user_id bigint REFERENCES users(id) NOT NULL,
     created_at timestamptz NOT NULL DEFAULT (now()),
     CONSTRAINT unique_user_post_likes UNIQUE (user_id, liked_post_id)
 );

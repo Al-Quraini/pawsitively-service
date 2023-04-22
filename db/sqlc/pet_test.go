@@ -6,8 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alquraini/pawsitively/db/util"
-	"github.com/google/uuid"
+	"github.com/alquraini/pawsitively/util"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,7 +21,7 @@ func CreateRandomPet(t *testing.T) Pet {
 		Gender:           util.RandomGender(),
 		PetType:          util.RandomAnimal(),
 		Breed:            sql.NullString{String: util.RandomName(), Valid: true},
-		ImageID:          uuid.NullUUID{UUID: image.ID, Valid: true},
+		ImageID:          sql.NullInt64{Int64: image.ID, Valid: true},
 		MedicalCondition: sql.NullString{String: util.RandomString(12), Valid: true},
 	}
 
@@ -82,7 +81,7 @@ func TestUpdatePet(t *testing.T) {
 		Gender:           util.RandomGender(),
 		PetType:          util.RandomAnimal(),
 		Breed:            sql.NullString{String: util.RandomName(), Valid: true},
-		ImageID:          uuid.NullUUID{UUID: pet1.ImageID.UUID, Valid: true},
+		ImageID:          sql.NullInt64{Int64: pet1.ImageID.Int64, Valid: true},
 		MedicalCondition: sql.NullString{String: util.RandomString(12), Valid: true},
 		ID:               pet1.ID,
 	}

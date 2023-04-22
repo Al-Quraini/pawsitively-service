@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 const createLike = `-- name: CreateLike :one
@@ -20,8 +18,8 @@ INSERT INTO likes (
 `
 
 type CreateLikeParams struct {
-	LikedPostID uuid.UUID `json:"liked_post_id"`
-	UserID      uuid.UUID `json:"user_id"`
+	LikedPostID int64 `json:"liked_post_id"`
+	UserID      int64 `json:"user_id"`
 }
 
 func (q *Queries) CreateLike(ctx context.Context, arg CreateLikeParams) (Like, error) {
@@ -41,7 +39,7 @@ DELETE FROM likes
 WHERE id = $1
 `
 
-func (q *Queries) DeleteLike(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteLike(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteLike, id)
 	return err
 }
@@ -51,7 +49,7 @@ SELECT id, liked_post_id, user_id, created_at FROM likes
 WHERE liked_post_id = $1 LIMIT 1
 `
 
-func (q *Queries) GetLike(ctx context.Context, likedPostID uuid.UUID) (Like, error) {
+func (q *Queries) GetLike(ctx context.Context, likedPostID int64) (Like, error) {
 	row := q.db.QueryRowContext(ctx, getLike, likedPostID)
 	var i Like
 	err := row.Scan(

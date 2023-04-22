@@ -7,43 +7,41 @@ package db
 import (
 	"database/sql"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Image struct {
-	ID  uuid.UUID `json:"id"`
-	Url string    `json:"url"`
+	ID  int64  `json:"id"`
+	Url string `json:"url"`
 }
 
 type Like struct {
-	ID          uuid.UUID `json:"id"`
-	LikedPostID uuid.UUID `json:"liked_post_id"`
-	UserID      uuid.UUID `json:"user_id"`
+	ID          int64     `json:"id"`
+	LikedPostID int64     `json:"liked_post_id"`
+	UserID      int64     `json:"user_id"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
 type Pet struct {
-	ID               uuid.UUID      `json:"id"`
+	ID               int64          `json:"id"`
 	Name             string         `json:"name"`
 	About            sql.NullString `json:"about"`
-	UserID           uuid.UUID      `json:"user_id"`
+	UserID           int64          `json:"user_id"`
 	Age              int32          `json:"age"`
 	Gender           string         `json:"gender"`
 	PetType          string         `json:"pet_type"`
 	Breed            sql.NullString `json:"breed"`
-	ImageID          uuid.NullUUID  `json:"image_id"`
+	ImageID          sql.NullInt64  `json:"image_id"`
 	MedicalCondition sql.NullString `json:"medical_condition"`
 	CreatedAt        time.Time      `json:"created_at"`
 	UpdatedAt        sql.NullTime   `json:"updated_at"`
 }
 
 type Post struct {
-	ID         uuid.UUID      `json:"id"`
+	ID         int64          `json:"id"`
 	Title      sql.NullString `json:"title"`
 	Body       sql.NullString `json:"body"`
-	UserID     uuid.UUID      `json:"user_id"`
-	ImageID    uuid.NullUUID  `json:"image_id"`
+	UserID     int64          `json:"user_id"`
+	ImageID    sql.NullInt64  `json:"image_id"`
 	Status     sql.NullString `json:"status"`
 	LikesCount int32          `json:"likes_count"`
 	CreatedAt  time.Time      `json:"created_at"`
@@ -51,15 +49,14 @@ type Post struct {
 }
 
 type User struct {
-	ID             uuid.UUID      `json:"id"`
-	FirstName      sql.NullString `json:"first_name"`
-	LastName       sql.NullString `json:"last_name"`
+	ID             int64          `json:"id"`
 	Email          string         `json:"email"`
+	FullName       sql.NullString `json:"full_name"`
 	HashedPassword string         `json:"hashed_password"`
 	City           sql.NullString `json:"city"`
 	State          sql.NullString `json:"state"`
 	Country        sql.NullString `json:"country"`
-	ImageID        uuid.NullUUID  `json:"image_id"`
+	ImageID        sql.NullInt64  `json:"image_id"`
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      sql.NullTime   `json:"updated_at"`
 }

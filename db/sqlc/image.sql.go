@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 const createImage = `-- name: CreateImage :one
@@ -29,7 +27,7 @@ DELETE FROM images
 WHERE id = $1
 `
 
-func (q *Queries) DeleteImage(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteImage(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteImage, id)
 	return err
 }
@@ -39,7 +37,7 @@ SELECT id, url FROM images
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetImage(ctx context.Context, id uuid.UUID) (Image, error) {
+func (q *Queries) GetImage(ctx context.Context, id int64) (Image, error) {
 	row := q.db.QueryRowContext(ctx, getImage, id)
 	var i Image
 	err := row.Scan(&i.ID, &i.Url)
@@ -54,8 +52,8 @@ RETURNING id, url
 `
 
 type UpdateImageParams struct {
-	Url string    `json:"url"`
-	ID  uuid.UUID `json:"id"`
+	Url string `json:"url"`
+	ID  int64  `json:"id"`
 }
 
 func (q *Queries) UpdateImage(ctx context.Context, arg UpdateImageParams) (Image, error) {

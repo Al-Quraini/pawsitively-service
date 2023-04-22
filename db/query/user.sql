@@ -5,16 +5,25 @@ INSERT INTO users (
     $1, $2
 ) RETURNING *;
 
+-- name: GetUserByID :one
+SELECT * FROM users
+WHERE 
+id = $1
+LIMIT 1;
+
 -- name: GetUser :one
 SELECT * FROM users
-WHERE id = $1 LIMIT 1;
+WHERE 
+email = $1
+LIMIT 1;
 
 -- name: UpdateUser :one
 UPDATE users
-SET first_name = $2,
-    last_name = $3,
-    email = $4,
-    image_id = $5,
+SET full_name = $2,
+    image_id = $3,
+    city = $4,
+    state = $5,
+    country = $6,
     updated_at = now()
 WHERE id = $1
 RETURNING *;

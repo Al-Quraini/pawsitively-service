@@ -8,8 +8,6 @@ package db
 import (
 	"context"
 	"database/sql"
-
-	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -17,7 +15,7 @@ INSERT INTO users (
     email, hashed_password
 ) VALUES (
     $1, $2
-) RETURNING id, first_name, last_name, email, hashed_password, city, state, country, image_id, created_at, updated_at
+) RETURNING id, email, full_name, hashed_password, city, state, country, image_id, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -30,9 +28,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.FirstName,
-		&i.LastName,
 		&i.Email,
+		&i.FullName,
 		&i.HashedPassword,
 		&i.City,
 		&i.State,
@@ -49,24 +46,50 @@ DELETE FROM users
 WHERE id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, first_name, last_name, email, hashed_password, city, state, country, image_id, created_at, updated_at FROM users
-WHERE id = $1 LIMIT 1
+SELECT id, email, full_name, hashed_password, city, state, country, image_id, created_at, updated_at FROM users
+WHERE 
+email = $1
+LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, id)
+func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.FirstName,
-		&i.LastName,
 		&i.Email,
+		&i.FullName,
+		&i.HashedPassword,
+		&i.City,
+		&i.State,
+		&i.Country,
+		&i.ImageID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserByID = `-- name: GetUserByID :one
+SELECT id, email, full_name, hashed_password, city, state, country, image_id, created_at, updated_at FROM users
+WHERE 
+id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.FullName,
 		&i.HashedPassword,
 		&i.City,
 		&i.State,
@@ -80,37 +103,39 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
-SET first_name = $2,
-    last_name = $3,
-    email = $4,
-    image_id = $5,
+SET full_name = $2,
+    image_id = $3,
+    city = $4,
+    state = $5,
+    country = $6,
     updated_at = now()
 WHERE id = $1
-RETURNING id, first_name, last_name, email, hashed_password, city, state, country, image_id, created_at, updated_at
+RETURNING id, email, full_name, hashed_password, city, state, country, image_id, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	ID        uuid.UUID      `json:"id"`
-	FirstName sql.NullString `json:"first_name"`
-	LastName  sql.NullString `json:"last_name"`
-	Email     string         `json:"email"`
-	ImageID   uuid.NullUUID  `json:"image_id"`
+	ID       int64          `json:"id"`
+	FullName sql.NullString `json:"full_name"`
+	ImageID  sql.NullInt64  `json:"image_id"`
+	City     sql.NullString `json:"city"`
+	State    sql.NullString `json:"state"`
+	Country  sql.NullString `json:"country"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, updateUser,
 		arg.ID,
-		arg.FirstName,
-		arg.LastName,
-		arg.Email,
+		arg.FullName,
 		arg.ImageID,
+		arg.City,
+		arg.State,
+		arg.Country,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.FirstName,
-		&i.LastName,
 		&i.Email,
+		&i.FullName,
 		&i.HashedPassword,
 		&i.City,
 		&i.State,

@@ -6,8 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alquraini/pawsitively/db/util"
-	"github.com/google/uuid"
+	"github.com/alquraini/pawsitively/util"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +17,7 @@ func CreateRandomPost(t *testing.T) Post {
 		Title:   sql.NullString{String: util.RandomName(), Valid: true},
 		Body:    sql.NullString{String: util.RandomString(50), Valid: true},
 		UserID:  user.ID,
-		ImageID: uuid.NullUUID{UUID: image.ID, Valid: true},
+		ImageID: sql.NullInt64{Int64: image.ID, Valid: true},
 		Status:  sql.NullString{String: "draft", Valid: true},
 	}
 	post, err := testQueries.CreatePost(context.Background(), arg)
@@ -66,7 +65,7 @@ func TestUpdatePost(t *testing.T) {
 		ID:      post1.ID,
 		Title:   sql.NullString{String: "New title", Valid: true},
 		Body:    sql.NullString{String: "New body", Valid: true},
-		ImageID: uuid.NullUUID{UUID: image.ID, Valid: true},
+		ImageID: sql.NullInt64{Int64: image.ID, Valid: true},
 		Status:  sql.NullString{String: "new-status", Valid: true},
 	}
 	post2, err := testQueries.UpdatePost(context.Background(), arg)

@@ -8,8 +8,6 @@ package db
 import (
 	"context"
 	"database/sql"
-
-	"github.com/google/uuid"
 )
 
 const createPost = `-- name: CreatePost :one
@@ -23,8 +21,8 @@ $1, $2, $3, $4, $5
 type CreatePostParams struct {
 	Title   sql.NullString `json:"title"`
 	Body    sql.NullString `json:"body"`
-	UserID  uuid.UUID      `json:"user_id"`
-	ImageID uuid.NullUUID  `json:"image_id"`
+	UserID  int64          `json:"user_id"`
+	ImageID sql.NullInt64  `json:"image_id"`
 	Status  sql.NullString `json:"status"`
 }
 
@@ -56,7 +54,7 @@ DELETE FROM posts
 WHERE id = $1
 `
 
-func (q *Queries) DeletePost(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeletePost(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deletePost, id)
 	return err
 }
@@ -66,7 +64,7 @@ SELECT id, title, body, user_id, image_id, status, likes_count, created_at, upda
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetPost(ctx context.Context, id uuid.UUID) (Post, error) {
+func (q *Queries) GetPost(ctx context.Context, id int64) (Post, error) {
 	row := q.db.QueryRowContext(ctx, getPost, id)
 	var i Post
 	err := row.Scan(
@@ -99,9 +97,9 @@ RETURNING id, title, body, user_id, image_id, status, likes_count, created_at, u
 type UpdatePostParams struct {
 	Title   sql.NullString `json:"title"`
 	Body    sql.NullString `json:"body"`
-	ImageID uuid.NullUUID  `json:"image_id"`
+	ImageID sql.NullInt64  `json:"image_id"`
 	Status  sql.NullString `json:"status"`
-	ID      uuid.UUID      `json:"id"`
+	ID      int64          `json:"id"`
 }
 
 func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {

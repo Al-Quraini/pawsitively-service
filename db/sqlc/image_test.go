@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/alquraini/pawsitively/db/util"
+	"github.com/alquraini/pawsitively/util"
 	"github.com/stretchr/testify/require"
 )
 

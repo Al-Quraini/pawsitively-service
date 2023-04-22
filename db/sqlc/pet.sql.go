@@ -8,8 +8,6 @@ package db
 import (
 	"context"
 	"database/sql"
-
-	"github.com/google/uuid"
 )
 
 const createPet = `-- name: CreatePet :one
@@ -23,12 +21,12 @@ INSERT INTO pets (
 type CreatePetParams struct {
 	Name             string         `json:"name"`
 	About            sql.NullString `json:"about"`
-	UserID           uuid.UUID      `json:"user_id"`
+	UserID           int64          `json:"user_id"`
 	Age              int32          `json:"age"`
 	Gender           string         `json:"gender"`
 	PetType          string         `json:"pet_type"`
 	Breed            sql.NullString `json:"breed"`
-	ImageID          uuid.NullUUID  `json:"image_id"`
+	ImageID          sql.NullInt64  `json:"image_id"`
 	MedicalCondition sql.NullString `json:"medical_condition"`
 }
 
@@ -67,7 +65,7 @@ DELETE FROM pets
 WHERE id = $1
 `
 
-func (q *Queries) DeletePet(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeletePet(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deletePet, id)
 	return err
 }
@@ -77,7 +75,7 @@ SELECT id, name, about, user_id, age, gender, pet_type, breed, image_id, medical
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetPet(ctx context.Context, id uuid.UUID) (Pet, error) {
+func (q *Queries) GetPet(ctx context.Context, id int64) (Pet, error) {
 	row := q.db.QueryRowContext(ctx, getPet, id)
 	var i Pet
 	err := row.Scan(
@@ -121,9 +119,9 @@ type UpdatePetParams struct {
 	Gender           string         `json:"gender"`
 	PetType          string         `json:"pet_type"`
 	Breed            sql.NullString `json:"breed"`
-	ImageID          uuid.NullUUID  `json:"image_id"`
+	ImageID          sql.NullInt64  `json:"image_id"`
 	MedicalCondition sql.NullString `json:"medical_condition"`
-	ID               uuid.UUID      `json:"id"`
+	ID               int64          `json:"id"`
 }
 
 func (q *Queries) UpdatePet(ctx context.Context, arg UpdatePetParams) (Pet, error) {
