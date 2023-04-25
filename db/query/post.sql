@@ -1,6 +1,6 @@
 -- name: CreatePost :one
 INSERT INTO posts (
-title, body, user_id, image_id, status
+title, body, user_id, image_url, status
 ) VALUES (
 $1, $2, $3, $4, $5
 ) RETURNING *;
@@ -9,12 +9,24 @@ $1, $2, $3, $4, $5
 SELECT * FROM posts
 WHERE id = $1 LIMIT 1;
 
+-- name: ListPosts :many
+SELECT * FROM posts
+ORDER BY id
+LIMIT $1
+OFFSET $2;
+
+-- name: ListPostsByUserID :many
+SELECT * FROM posts
+WHERE user_id = $1
+ORDER BY id
+LIMIT $2
+OFFSET $3;
 -- name: UpdatePost :one
 UPDATE posts
 SET
 title = $1,
 body = $2,
-image_id = $3,
+image_url = $3,
 status = $4,
 updated_at = now()
 

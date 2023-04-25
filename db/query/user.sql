@@ -20,7 +20,7 @@ LIMIT 1;
 -- name: UpdateUser :one
 UPDATE users
 SET full_name = $2,
-    image_id = $3,
+    image_url = $3,
     city = $4,
     state = $5,
     country = $6,

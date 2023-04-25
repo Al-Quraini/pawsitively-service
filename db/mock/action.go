@@ -35,21 +35,6 @@ func (m *MockAction) EXPECT() *MockActionMockRecorder {
 	return m.recorder
 }
 
-// CreateImage mocks base method.
-func (m *MockAction) CreateImage(arg0 context.Context, arg1 string) (db.Image, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateImage", arg0, arg1)
-	ret0, _ := ret[0].(db.Image)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateImage indicates an expected call of CreateImage.
-func (mr *MockActionMockRecorder) CreateImage(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateImage", reflect.TypeOf((*MockAction)(nil).CreateImage), arg0, arg1)
-}
-
 // CreateLike mocks base method.
 func (m *MockAction) CreateLike(arg0 context.Context, arg1 db.CreateLikeParams) (db.Like, error) {
 	m.ctrl.T.Helper()
@@ -110,22 +95,8 @@ func (mr *MockActionMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockAction)(nil).CreateUser), arg0, arg1)
 }
 
-// DeleteImage mocks base method.
-func (m *MockAction) DeleteImage(arg0 context.Context, arg1 int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteImage", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteImage indicates an expected call of DeleteImage.
-func (mr *MockActionMockRecorder) DeleteImage(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteImage", reflect.TypeOf((*MockAction)(nil).DeleteImage), arg0, arg1)
-}
-
 // DeleteLike mocks base method.
-func (m *MockAction) DeleteLike(arg0 context.Context, arg1 int64) error {
+func (m *MockAction) DeleteLike(arg0 context.Context, arg1 db.DeleteLikeParams) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteLike", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -180,49 +151,64 @@ func (mr *MockActionMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockAction)(nil).DeleteUser), arg0, arg1)
 }
 
-// GetImage mocks base method.
-func (m *MockAction) GetImage(arg0 context.Context, arg1 int64) (db.Image, error) {
+// GetLikeFromPostForUser mocks base method.
+func (m *MockAction) GetLikeFromPostForUser(arg0 context.Context, arg1 db.GetLikeFromPostForUserParams) (db.Like, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetImage", arg0, arg1)
-	ret0, _ := ret[0].(db.Image)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetImage indicates an expected call of GetImage.
-func (mr *MockActionMockRecorder) GetImage(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetImage", reflect.TypeOf((*MockAction)(nil).GetImage), arg0, arg1)
-}
-
-// GetLike mocks base method.
-func (m *MockAction) GetLike(arg0 context.Context, arg1 int64) (db.Like, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLike", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetLikeFromPostForUser", arg0, arg1)
 	ret0, _ := ret[0].(db.Like)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetLike indicates an expected call of GetLike.
-func (mr *MockActionMockRecorder) GetLike(arg0, arg1 interface{}) *gomock.Call {
+// GetLikeFromPostForUser indicates an expected call of GetLikeFromPostForUser.
+func (mr *MockActionMockRecorder) GetLikeFromPostForUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLike", reflect.TypeOf((*MockAction)(nil).GetLike), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLikeFromPostForUser", reflect.TypeOf((*MockAction)(nil).GetLikeFromPostForUser), arg0, arg1)
 }
 
-// GetPet mocks base method.
-func (m *MockAction) GetPet(arg0 context.Context, arg1 int64) (db.Pet, error) {
+// GetLikesFromPost mocks base method.
+func (m *MockAction) GetLikesFromPost(arg0 context.Context, arg1 int64) ([]db.Like, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPet", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetLikesFromPost", arg0, arg1)
+	ret0, _ := ret[0].([]db.Like)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLikesFromPost indicates an expected call of GetLikesFromPost.
+func (mr *MockActionMockRecorder) GetLikesFromPost(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLikesFromPost", reflect.TypeOf((*MockAction)(nil).GetLikesFromPost), arg0, arg1)
+}
+
+// GetPetById mocks base method.
+func (m *MockAction) GetPetById(arg0 context.Context, arg1 int64) (db.Pet, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPetById", arg0, arg1)
 	ret0, _ := ret[0].(db.Pet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetPet indicates an expected call of GetPet.
-func (mr *MockActionMockRecorder) GetPet(arg0, arg1 interface{}) *gomock.Call {
+// GetPetById indicates an expected call of GetPetById.
+func (mr *MockActionMockRecorder) GetPetById(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPet", reflect.TypeOf((*MockAction)(nil).GetPet), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPetById", reflect.TypeOf((*MockAction)(nil).GetPetById), arg0, arg1)
+}
+
+// GetPets mocks base method.
+func (m *MockAction) GetPets(arg0 context.Context, arg1 int64) ([]db.Pet, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPets", arg0, arg1)
+	ret0, _ := ret[0].([]db.Pet)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPets indicates an expected call of GetPets.
+func (mr *MockActionMockRecorder) GetPets(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPets", reflect.TypeOf((*MockAction)(nil).GetPets), arg0, arg1)
 }
 
 // GetPost mocks base method.
@@ -270,19 +256,34 @@ func (mr *MockActionMockRecorder) GetUserByID(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockAction)(nil).GetUserByID), arg0, arg1)
 }
 
-// UpdateImage mocks base method.
-func (m *MockAction) UpdateImage(arg0 context.Context, arg1 db.UpdateImageParams) (db.Image, error) {
+// ListPosts mocks base method.
+func (m *MockAction) ListPosts(arg0 context.Context, arg1 db.ListPostsParams) ([]db.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateImage", arg0, arg1)
-	ret0, _ := ret[0].(db.Image)
+	ret := m.ctrl.Call(m, "ListPosts", arg0, arg1)
+	ret0, _ := ret[0].([]db.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// UpdateImage indicates an expected call of UpdateImage.
-func (mr *MockActionMockRecorder) UpdateImage(arg0, arg1 interface{}) *gomock.Call {
+// ListPosts indicates an expected call of ListPosts.
+func (mr *MockActionMockRecorder) ListPosts(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateImage", reflect.TypeOf((*MockAction)(nil).UpdateImage), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPosts", reflect.TypeOf((*MockAction)(nil).ListPosts), arg0, arg1)
+}
+
+// ListPostsByUserID mocks base method.
+func (m *MockAction) ListPostsByUserID(arg0 context.Context, arg1 db.ListPostsByUserIDParams) ([]db.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPostsByUserID", arg0, arg1)
+	ret0, _ := ret[0].([]db.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListPostsByUserID indicates an expected call of ListPostsByUserID.
+func (mr *MockActionMockRecorder) ListPostsByUserID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPostsByUserID", reflect.TypeOf((*MockAction)(nil).ListPostsByUserID), arg0, arg1)
 }
 
 // UpdatePet mocks base method.

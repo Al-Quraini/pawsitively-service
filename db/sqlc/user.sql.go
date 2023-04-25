@@ -15,7 +15,7 @@ INSERT INTO users (
     email, hashed_password
 ) VALUES (
     $1, $2
-) RETURNING id, email, full_name, hashed_password, city, state, country, image_id, created_at, updated_at
+) RETURNING id, email, full_name, hashed_password, city, state, country, image_url, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -34,7 +34,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.City,
 		&i.State,
 		&i.Country,
-		&i.ImageID,
+		&i.ImageUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -52,7 +52,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, full_name, hashed_password, city, state, country, image_id, created_at, updated_at FROM users
+SELECT id, email, full_name, hashed_password, city, state, country, image_url, created_at, updated_at FROM users
 WHERE 
 email = $1
 LIMIT 1
@@ -69,7 +69,7 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 		&i.City,
 		&i.State,
 		&i.Country,
-		&i.ImageID,
+		&i.ImageUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -77,7 +77,7 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, full_name, hashed_password, city, state, country, image_id, created_at, updated_at FROM users
+SELECT id, email, full_name, hashed_password, city, state, country, image_url, created_at, updated_at FROM users
 WHERE 
 id = $1
 LIMIT 1
@@ -94,7 +94,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.City,
 		&i.State,
 		&i.Country,
-		&i.ImageID,
+		&i.ImageUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -104,19 +104,19 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET full_name = $2,
-    image_id = $3,
+    image_url = $3,
     city = $4,
     state = $5,
     country = $6,
     updated_at = now()
 WHERE id = $1
-RETURNING id, email, full_name, hashed_password, city, state, country, image_id, created_at, updated_at
+RETURNING id, email, full_name, hashed_password, city, state, country, image_url, created_at, updated_at
 `
 
 type UpdateUserParams struct {
 	ID       int64          `json:"id"`
 	FullName sql.NullString `json:"full_name"`
-	ImageID  sql.NullInt64  `json:"image_id"`
+	ImageUrl sql.NullString `json:"image_url"`
 	City     sql.NullString `json:"city"`
 	State    sql.NullString `json:"state"`
 	Country  sql.NullString `json:"country"`
@@ -126,7 +126,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	row := q.db.QueryRowContext(ctx, updateUser,
 		arg.ID,
 		arg.FullName,
-		arg.ImageID,
+		arg.ImageUrl,
 		arg.City,
 		arg.State,
 		arg.Country,
@@ -140,7 +140,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.City,
 		&i.State,
 		&i.Country,
-		&i.ImageID,
+		&i.ImageUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

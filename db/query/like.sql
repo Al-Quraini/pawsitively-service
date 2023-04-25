@@ -5,10 +5,17 @@ INSERT INTO likes (
     $1, $2
 ) RETURNING *;
 
--- name: GetLike :one
+
+-- name: GetLikeFromPostForUser :one
 SELECT * FROM likes
-WHERE liked_post_id = $1 LIMIT 1;
+WHERE liked_post_id = $1
+  AND user_id = $2
+LIMIT 1;
+
+-- name: GetLikesFromPost :many
+SELECT * FROM likes
+WHERE liked_post_id = $1;
 
 -- name: DeleteLike :exec
 DELETE FROM likes
-WHERE id = $1;
+WHERE liked_post_id = $1 AND user_id = $2;

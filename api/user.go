@@ -19,7 +19,7 @@ type userRespnse struct {
 	City      *string    `json:"city"`
 	State     *string    `json:"state"`
 	Country   *string    `json:"country"`
-	ImageID   *int64     `json:"image_id"`
+	ImageUrl  *string    `json:"image_url"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
 }
@@ -33,7 +33,7 @@ func newUserReponse(user db.User) userRespnse {
 		City:      util.GetNullableString(user.City),
 		State:     util.GetNullableString(user.State),
 		Country:   util.GetNullableString(user.Country),
-		ImageID:   util.GetNullableInt64(user.ImageID),
+		ImageUrl:  util.GetNullableString(user.ImageUrl),
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: util.GetNullableTime(user.UpdatedAt),
 	}
@@ -156,7 +156,7 @@ type updateUserRequest struct {
 	City     string `json:"city"`
 	State    string `json:"state"`
 	Country  string `json:"country"`
-	ImageID  int64  `json:"image_id"`
+	ImageUrl string `json:"image_url"`
 }
 
 func (server *Server) updateUser(ctx *gin.Context) {
@@ -174,7 +174,7 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		City:     util.StringToNullString(req.City),
 		State:    util.StringToNullString(req.State),
 		Country:  util.StringToNullString(req.Country),
-		ImageID:  util.Int64ToNullInt64(req.ImageID),
+		ImageUrl: util.StringToNullString(req.ImageUrl),
 	}
 
 	user, err := server.action.UpdateUser(ctx, arg)

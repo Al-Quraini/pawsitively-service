@@ -12,13 +12,11 @@ import (
 
 func CreateRandomPost(t *testing.T) Post {
 	user := CreateRandomUser(t)
-	image := CreateRandomImage(t)
 	arg := CreatePostParams{
-		Title:   sql.NullString{String: util.RandomName(), Valid: true},
-		Body:    sql.NullString{String: util.RandomString(50), Valid: true},
-		UserID:  user.ID,
-		ImageID: sql.NullInt64{Int64: image.ID, Valid: true},
-		Status:  sql.NullString{String: "draft", Valid: true},
+		Title:  sql.NullString{String: util.RandomName(), Valid: true},
+		Body:   sql.NullString{String: util.RandomString(50), Valid: true},
+		UserID: user.ID,
+		Status: sql.NullString{String: "draft", Valid: true},
 	}
 	post, err := testQueries.CreatePost(context.Background(), arg)
 	require.NoError(t, err)
@@ -27,7 +25,7 @@ func CreateRandomPost(t *testing.T) Post {
 	require.Equal(t, arg.Title, post.Title)
 	require.Equal(t, arg.Body, post.Body)
 	require.Equal(t, arg.UserID, post.UserID)
-	require.Equal(t, arg.ImageID, post.ImageID)
+	require.Equal(t, arg.ImageUrl, post.ImageUrl)
 	require.Equal(t, arg.Status, post.Status)
 
 	require.NotZero(t, post.ID)
@@ -51,22 +49,60 @@ func TestGetPost(t *testing.T) {
 	require.Equal(t, post1.Title, post2.Title)
 	require.Equal(t, post1.Body, post2.Body)
 	require.Equal(t, post1.UserID, post2.UserID)
-	require.Equal(t, post1.ImageID, post2.ImageID)
+	require.Equal(t, post1.ImageUrl, post2.ImageUrl)
 	require.Equal(t, post1.Status, post2.Status)
 	require.Equal(t, post1.LikesCount, post2.LikesCount)
 	require.WithinDuration(t, post1.CreatedAt, post2.CreatedAt, time.Second)
 }
 
+func TestListPosts(t *testing.T) {
+	// var lastPost Post
+	for i := 0; i < 5; i++ {
+		CreateRandomPost(t)
+	}
+
+	arg := ListPostsParams{
+		Limit:  5,
+		Offset: 0,
+	}
+	posts, err := testQueries.ListPosts(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, posts)
+
+	for _, post := range posts {
+		require.NotEmpty(t, post)
+	}
+}
+
+func TestListPostsByUserID(t *testing.T) {
+	var lastPost Post
+	for i := 0; i < 5; i++ {
+		lastPost = CreateRandomPost(t)
+	}
+
+	arg := ListPostsByUserIDParams{
+		UserID: lastPost.UserID,
+		Limit:  5,
+		Offset: 0,
+	}
+	posts, err := testQueries.ListPostsByUserID(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, posts)
+
+	for _, post := range posts {
+		require.NotEmpty(t, post)
+		require.Equal(t, lastPost.UserID, post.UserID)
+	}
+}
+
 func TestUpdatePost(t *testing.T) {
-	image := CreateRandomImage(t)
 	post1 := CreateRandomPost(t)
 
 	arg := UpdatePostParams{
-		ID:      post1.ID,
-		Title:   sql.NullString{String: "New title", Valid: true},
-		Body:    sql.NullString{String: "New body", Valid: true},
-		ImageID: sql.NullInt64{Int64: image.ID, Valid: true},
-		Status:  sql.NullString{String: "new-status", Valid: true},
+		ID:     post1.ID,
+		Title:  sql.NullString{String: "New title", Valid: true},
+		Body:   sql.NullString{String: "New body", Valid: true},
+		Status: sql.NullString{String: "new-status", Valid: true},
 	}
 	post2, err := testQueries.UpdatePost(context.Background(), arg)
 	require.NoError(t, err)
@@ -76,15 +112,10 @@ func TestUpdatePost(t *testing.T) {
 	require.Equal(t, arg.Title, post2.Title)
 	require.Equal(t, arg.Body, post2.Body)
 	require.Equal(t, post1.UserID, post2.UserID)
-	require.Equal(t, arg.ImageID, post2.ImageID)
+	require.Equal(t, arg.ImageUrl, post2.ImageUrl)
 	require.Equal(t, arg.Status, post2.Status)
 	require.Equal(t, post1.CreatedAt, post2.CreatedAt)
 }
-
-// func TestLikesCountOnLike(t *testing.T) {
-// 	post := CreateRandomPet(t)
-// 	user1 := createRandomPost
-// }
 
 func TestDeletePost(t *testing.T) {
 	post := CreateRandomPost(t)
