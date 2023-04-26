@@ -494,7 +494,6 @@ func randomUser(t *testing.T) (user db.User, password string) {
 }
 
 func updateRandomUser(t *testing.T) (user db.User) {
-	user, _ = randomUser(t)
 	hashedPassword, err := util.HashPassword("123456789")
 	require.NoError(t, err)
 
