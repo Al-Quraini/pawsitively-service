@@ -34,6 +34,7 @@ func NewServer(config util.Config, action db.Action) (*Server, error) {
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
+	router.SetTrustedProxies(nil)
 
 	// authentication
 	router.POST("/users/register", server.registerUser)
