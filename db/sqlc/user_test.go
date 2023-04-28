@@ -56,7 +56,7 @@ func TestGetUserByID(t *testing.T) {
 	require.Equal(t, user.State, userByID.State)
 	require.Equal(t, user.Country, userByID.Country)
 	require.Equal(t, user.HashedPassword, userByID.HashedPassword)
-	require.Equal(t, user.ImageID, userByID.ImageID)
+	require.Equal(t, user.ImageUrl, userByID.ImageUrl)
 	require.WithinDuration(t, user.CreatedAt, userByID.CreatedAt, time.Second)
 }
 
@@ -65,7 +65,6 @@ func TestGetUser(t *testing.T) {
 	user2, err := testQueries.GetUser(context.Background(), user1.Email)
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
-
 	require.Equal(t, user1.ID, user2.ID)
 	require.Equal(t, user1.Email, user2.Email)
 	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
@@ -73,14 +72,12 @@ func TestGetUser(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	user1 := CreateRandomUser(t)
-	image := CreateRandomImage(t)
 	arg := UpdateUserParams{
 		ID:       user1.ID,
 		FullName: sql.NullString{String: util.RandomName(), Valid: true},
 		City:     sql.NullString{String: util.RandomString(10), Valid: true},
 		State:    sql.NullString{String: util.RandomString(10), Valid: true},
 		Country:  sql.NullString{String: util.RandomString(10), Valid: true},
-		ImageID:  sql.NullInt64{Int64: image.ID, Valid: true},
 	}
 	user2, err := testQueries.UpdateUser(context.Background(), arg)
 	require.NoError(t, err)

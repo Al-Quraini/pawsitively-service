@@ -36,21 +36,33 @@ func (q *Queries) CreateLike(ctx context.Context, arg CreateLikeParams) (Like, e
 
 const deleteLike = `-- name: DeleteLike :exec
 DELETE FROM likes
-WHERE id = $1
+WHERE liked_post_id = $1 AND user_id = $2
 `
 
-func (q *Queries) DeleteLike(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteLike, id)
+type DeleteLikeParams struct {
+	LikedPostID int64 `json:"liked_post_id"`
+	UserID      int64 `json:"user_id"`
+}
+
+func (q *Queries) DeleteLike(ctx context.Context, arg DeleteLikeParams) error {
+	_, err := q.db.ExecContext(ctx, deleteLike, arg.LikedPostID, arg.UserID)
 	return err
 }
 
-const getLike = `-- name: GetLike :one
+const getLikeFromPostForUser = `-- name: GetLikeFromPostForUser :one
 SELECT id, liked_post_id, user_id, created_at FROM likes
-WHERE liked_post_id = $1 LIMIT 1
+WHERE liked_post_id = $1
+  AND user_id = $2
+LIMIT 1
 `
 
-func (q *Queries) GetLike(ctx context.Context, likedPostID int64) (Like, error) {
-	row := q.db.QueryRowContext(ctx, getLike, likedPostID)
+type GetLikeFromPostForUserParams struct {
+	LikedPostID int64 `json:"liked_post_id"`
+	UserID      int64 `json:"user_id"`
+}
+
+func (q *Queries) GetLikeFromPostForUser(ctx context.Context, arg GetLikeFromPostForUserParams) (Like, error) {
+	row := q.db.QueryRowContext(ctx, getLikeFromPostForUser, arg.LikedPostID, arg.UserID)
 	var i Like
 	err := row.Scan(
 		&i.ID,
@@ -59,4 +71,37 @@ func (q *Queries) GetLike(ctx context.Context, likedPostID int64) (Like, error) 
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getLikesFromPost = `-- name: GetLikesFromPost :many
+SELECT id, liked_post_id, user_id, created_at FROM likes
+WHERE liked_post_id = $1
+`
+
+func (q *Queries) GetLikesFromPost(ctx context.Context, likedPostID int64) ([]Like, error) {
+	rows, err := q.db.QueryContext(ctx, getLikesFromPost, likedPostID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Like
+	for rows.Next() {
+		var i Like
+		if err := rows.Scan(
+			&i.ID,
+			&i.LikedPostID,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

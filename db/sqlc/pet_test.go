@@ -12,7 +12,6 @@ import (
 
 func CreateRandomPet(t *testing.T) Pet {
 	user := CreateRandomUser(t)
-	image := CreateRandomImage(t)
 	arg := CreatePetParams{
 		Name:             util.RandomName(),
 		About:            sql.NullString{String: util.RandomString(50), Valid: true},
@@ -21,7 +20,7 @@ func CreateRandomPet(t *testing.T) Pet {
 		Gender:           util.RandomGender(),
 		PetType:          util.RandomAnimal(),
 		Breed:            sql.NullString{String: util.RandomName(), Valid: true},
-		ImageID:          sql.NullInt64{Int64: image.ID, Valid: true},
+		ImageUrl:         sql.NullString{String: util.RandomImageUrl(), Valid: true},
 		MedicalCondition: sql.NullString{String: util.RandomString(12), Valid: true},
 	}
 
@@ -36,7 +35,7 @@ func CreateRandomPet(t *testing.T) Pet {
 	require.Equal(t, arg.Gender, pet.Gender)
 	require.Equal(t, arg.PetType, pet.PetType)
 	require.Equal(t, arg.Breed, pet.Breed)
-	require.Equal(t, arg.ImageID, pet.ImageID)
+	require.Equal(t, arg.ImageUrl, pet.ImageUrl)
 	require.Equal(t, arg.MedicalCondition, pet.MedicalCondition)
 
 	require.NotZero(t, pet.ID)
@@ -50,25 +49,30 @@ func TestCreatePet(t *testing.T) {
 }
 
 func TestGetPet(t *testing.T) {
-	pet1 := CreateRandomPet(t)
+	var lastPet Pet
+	for i := 0; i < 5; i++ {
+		lastPet = CreateRandomPet(t)
+	}
 
-	pet2, err := testQueries.GetPet(context.Background(), pet1.ID)
+	pets, err := testQueries.GetPets(context.Background(), lastPet.UserID)
 	require.NoError(t, err)
-	require.NotEmpty(t, pet2)
+	require.NotEmpty(t, pets)
 
-	require.Equal(t, pet1.ID, pet2.ID)
-	require.Equal(t, pet1.Name, pet2.Name)
-	require.Equal(t, pet1.About, pet2.About)
-	require.Equal(t, pet1.UserID, pet2.UserID)
-	require.Equal(t, pet1.Age, pet2.Age)
-	require.Equal(t, pet1.Gender, pet2.Gender)
-	require.Equal(t, pet1.PetType, pet2.PetType)
-	require.Equal(t, pet1.Breed, pet2.Breed)
-	require.Equal(t, pet1.ImageID, pet2.ImageID)
-	require.Equal(t, pet1.MedicalCondition, pet2.MedicalCondition)
-	require.WithinDuration(t, pet1.CreatedAt, pet2.CreatedAt, time.Second)
+	for _, pet := range pets {
+		require.Equal(t, pet.ID, lastPet.ID)
+		require.Equal(t, pet.Name, lastPet.Name)
+		require.Equal(t, pet.About, lastPet.About)
+		require.Equal(t, pet.UserID, lastPet.UserID)
+		require.Equal(t, pet.Age, lastPet.Age)
+		require.Equal(t, pet.Gender, lastPet.Gender)
+		require.Equal(t, pet.PetType, lastPet.PetType)
+		require.Equal(t, pet.Breed, lastPet.Breed)
+		require.Equal(t, pet.ImageUrl, lastPet.ImageUrl)
+		require.Equal(t, pet.MedicalCondition, lastPet.MedicalCondition)
+		require.WithinDuration(t, pet.CreatedAt, lastPet.CreatedAt, time.Second)
 
-	require.Equal(t, pet1.CreatedAt, pet2.CreatedAt)
+		require.Equal(t, pet.CreatedAt, lastPet.CreatedAt)
+	}
 }
 
 func TestUpdatePet(t *testing.T) {
@@ -81,7 +85,7 @@ func TestUpdatePet(t *testing.T) {
 		Gender:           util.RandomGender(),
 		PetType:          util.RandomAnimal(),
 		Breed:            sql.NullString{String: util.RandomName(), Valid: true},
-		ImageID:          sql.NullInt64{Int64: pet1.ImageID.Int64, Valid: true},
+		ImageUrl:         sql.NullString{String: util.RandomImageUrl(), Valid: true},
 		MedicalCondition: sql.NullString{String: util.RandomString(12), Valid: true},
 		ID:               pet1.ID,
 	}
@@ -98,7 +102,7 @@ func TestUpdatePet(t *testing.T) {
 	require.Equal(t, arg.Gender, pet2.Gender)
 	require.Equal(t, arg.PetType, pet2.PetType)
 	require.Equal(t, arg.Breed, pet2.Breed)
-	require.Equal(t, arg.ImageID, pet2.ImageID)
+	require.Equal(t, arg.ImageUrl, pet2.ImageUrl)
 	require.Equal(t, pet1.CreatedAt, pet2.CreatedAt)
 	require.Equal(t, pet1.CreatedAt, pet2.CreatedAt)
 }
@@ -108,7 +112,7 @@ func TestDeletePet(t *testing.T) {
 	err := testQueries.DeletePet(context.Background(), pet1.ID)
 	require.NoError(t, err)
 
-	pet2, err := testQueries.GetPet(context.Background(), pet1.ID)
+	pet2, err := testQueries.GetPetById(context.Background(), pet1.ID)
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, pet2)

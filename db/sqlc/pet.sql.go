@@ -12,10 +12,10 @@ import (
 
 const createPet = `-- name: CreatePet :one
 INSERT INTO pets (
-    name, about, user_id, age, gender, pet_type, breed, image_id, medical_condition
+    name, about, user_id, age, gender, pet_type, breed, image_url, medical_condition
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9
-) RETURNING id, name, about, user_id, age, gender, pet_type, breed, image_id, medical_condition, created_at, updated_at
+) RETURNING id, name, about, user_id, age, gender, pet_type, breed, image_url, medical_condition, created_at, updated_at
 `
 
 type CreatePetParams struct {
@@ -26,7 +26,7 @@ type CreatePetParams struct {
 	Gender           string         `json:"gender"`
 	PetType          string         `json:"pet_type"`
 	Breed            sql.NullString `json:"breed"`
-	ImageID          sql.NullInt64  `json:"image_id"`
+	ImageUrl         sql.NullString `json:"image_url"`
 	MedicalCondition sql.NullString `json:"medical_condition"`
 }
 
@@ -39,7 +39,7 @@ func (q *Queries) CreatePet(ctx context.Context, arg CreatePetParams) (Pet, erro
 		arg.Gender,
 		arg.PetType,
 		arg.Breed,
-		arg.ImageID,
+		arg.ImageUrl,
 		arg.MedicalCondition,
 	)
 	var i Pet
@@ -52,7 +52,7 @@ func (q *Queries) CreatePet(ctx context.Context, arg CreatePetParams) (Pet, erro
 		&i.Gender,
 		&i.PetType,
 		&i.Breed,
-		&i.ImageID,
+		&i.ImageUrl,
 		&i.MedicalCondition,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -70,13 +70,14 @@ func (q *Queries) DeletePet(ctx context.Context, id int64) error {
 	return err
 }
 
-const getPet = `-- name: GetPet :one
-SELECT id, name, about, user_id, age, gender, pet_type, breed, image_id, medical_condition, created_at, updated_at FROM pets
-WHERE id = $1 LIMIT 1
+const getPetById = `-- name: GetPetById :one
+SELECT id, name, about, user_id, age, gender, pet_type, breed, image_url, medical_condition, created_at, updated_at FROM pets
+WHERE id = $1
+LIMIT 1
 `
 
-func (q *Queries) GetPet(ctx context.Context, id int64) (Pet, error) {
-	row := q.db.QueryRowContext(ctx, getPet, id)
+func (q *Queries) GetPetById(ctx context.Context, id int64) (Pet, error) {
+	row := q.db.QueryRowContext(ctx, getPetById, id)
 	var i Pet
 	err := row.Scan(
 		&i.ID,
@@ -87,12 +88,54 @@ func (q *Queries) GetPet(ctx context.Context, id int64) (Pet, error) {
 		&i.Gender,
 		&i.PetType,
 		&i.Breed,
-		&i.ImageID,
+		&i.ImageUrl,
 		&i.MedicalCondition,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getPets = `-- name: GetPets :many
+SELECT id, name, about, user_id, age, gender, pet_type, breed, image_url, medical_condition, created_at, updated_at FROM pets
+WHERE user_id = $1
+ORDER BY id
+`
+
+func (q *Queries) GetPets(ctx context.Context, userID int64) ([]Pet, error) {
+	rows, err := q.db.QueryContext(ctx, getPets, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Pet
+	for rows.Next() {
+		var i Pet
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.About,
+			&i.UserID,
+			&i.Age,
+			&i.Gender,
+			&i.PetType,
+			&i.Breed,
+			&i.ImageUrl,
+			&i.MedicalCondition,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updatePet = `-- name: UpdatePet :one
@@ -104,12 +147,11 @@ SET
     gender = $4,
     pet_type = $5,
     breed = $6,
-    image_id = $7,
+    image_url = $7,
     medical_condition = $8,
     updated_at = now()
-
 WHERE id = $9
-RETURNING id, name, about, user_id, age, gender, pet_type, breed, image_id, medical_condition, created_at, updated_at
+RETURNING id, name, about, user_id, age, gender, pet_type, breed, image_url, medical_condition, created_at, updated_at
 `
 
 type UpdatePetParams struct {
@@ -119,7 +161,7 @@ type UpdatePetParams struct {
 	Gender           string         `json:"gender"`
 	PetType          string         `json:"pet_type"`
 	Breed            sql.NullString `json:"breed"`
-	ImageID          sql.NullInt64  `json:"image_id"`
+	ImageUrl         sql.NullString `json:"image_url"`
 	MedicalCondition sql.NullString `json:"medical_condition"`
 	ID               int64          `json:"id"`
 }
@@ -132,7 +174,7 @@ func (q *Queries) UpdatePet(ctx context.Context, arg UpdatePetParams) (Pet, erro
 		arg.Gender,
 		arg.PetType,
 		arg.Breed,
-		arg.ImageID,
+		arg.ImageUrl,
 		arg.MedicalCondition,
 		arg.ID,
 	)
@@ -146,7 +188,7 @@ func (q *Queries) UpdatePet(ctx context.Context, arg UpdatePetParams) (Pet, erro
 		&i.Gender,
 		&i.PetType,
 		&i.Breed,
-		&i.ImageID,
+		&i.ImageUrl,
 		&i.MedicalCondition,
 		&i.CreatedAt,
 		&i.UpdatedAt,

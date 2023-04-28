@@ -9,6 +9,7 @@ import (
 	"github.com/alquraini/pawsitively/token"
 	"github.com/alquraini/pawsitively/util"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -19,7 +20,7 @@ type userRespnse struct {
 	City      *string    `json:"city"`
 	State     *string    `json:"state"`
 	Country   *string    `json:"country"`
-	ImageID   *int64     `json:"image_id"`
+	ImageUrl  *string    `json:"image_url"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
 }
@@ -33,7 +34,7 @@ func newUserReponse(user db.User) userRespnse {
 		City:      util.GetNullableString(user.City),
 		State:     util.GetNullableString(user.State),
 		Country:   util.GetNullableString(user.Country),
-		ImageID:   util.GetNullableInt64(user.ImageID),
+		ImageUrl:  util.GetNullableString(user.ImageUrl),
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: util.GetNullableTime(user.UpdatedAt),
 	}
@@ -48,8 +49,12 @@ type loginUserRequest struct {
 }
 
 type loginUserResponse struct {
-	AccessToken string      `json:"access_token"`
-	User        userRespnse `json:"user"`
+	SessionID             uuid.UUID   `json:"session_id"`
+	AccessToken           string      `json:"access_token"`
+	AccessTokenExpiresAt  time.Time   `json:"access_token_expirees_at"`
+	RefreshToken          string      `json:"refersh_token"`
+	RefreshTokenExpiresAt time.Time   `json:"refresh_token_expirees_at"`
+	User                  userRespnse `json:"user"`
 }
 
 func (server *Server) loginUser(ctx *gin.Context) {
@@ -75,7 +80,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := server.tokenMaker.CreateToken(
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		user.ID,
 		server.config.AccessTokenDuration,
 	)
@@ -84,9 +89,38 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
+	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+		user.ID,
+		server.config.RefreshTokenDuration,
+	)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	session, err := server.action.CreateSession(ctx, db.CreateSessionParams{
+		ID:           refreshPayload.ID,
+		UserID:       user.ID,
+		RefreshToken: refreshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshPayload.ExpiredAt,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	rsp := loginUserResponse{
-		AccessToken: accessToken,
-		User:        newUserReponse(user),
+		SessionID:             session.ID,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
+		User:                  newUserReponse(user),
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
@@ -131,7 +165,7 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := server.tokenMaker.CreateToken(
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		user.ID,
 		server.config.AccessTokenDuration,
 	)
@@ -140,9 +174,37 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		return
 	}
 
+	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+		user.ID,
+		server.config.RefreshTokenDuration,
+	)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	session, err := server.action.CreateSession(ctx, db.CreateSessionParams{
+		ID:           refreshPayload.ID,
+		UserID:       user.ID,
+		RefreshToken: refreshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshPayload.ExpiredAt,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 	rsp := loginUserResponse{
-		AccessToken: accessToken,
-		User:        newUserReponse(user),
+		SessionID:             session.ID,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
+		User:                  newUserReponse(user),
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
@@ -156,7 +218,7 @@ type updateUserRequest struct {
 	City     string `json:"city"`
 	State    string `json:"state"`
 	Country  string `json:"country"`
-	ImageID  int64  `json:"image_id"`
+	ImageUrl string `json:"image_url"`
 }
 
 func (server *Server) updateUser(ctx *gin.Context) {
@@ -174,7 +236,7 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		City:     util.StringToNullString(req.City),
 		State:    util.StringToNullString(req.State),
 		Country:  util.StringToNullString(req.Country),
-		ImageID:  util.Int64ToNullInt64(req.ImageID),
+		ImageUrl: util.StringToNullString(req.ImageUrl),
 	}
 
 	user, err := server.action.UpdateUser(ctx, arg)

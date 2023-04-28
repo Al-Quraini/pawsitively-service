@@ -7,12 +7,9 @@ package db
 import (
 	"database/sql"
 	"time"
-)
 
-type Image struct {
-	ID  int64  `json:"id"`
-	Url string `json:"url"`
-}
+	"github.com/google/uuid"
+)
 
 type Like struct {
 	ID          int64     `json:"id"`
@@ -30,7 +27,7 @@ type Pet struct {
 	Gender           string         `json:"gender"`
 	PetType          string         `json:"pet_type"`
 	Breed            sql.NullString `json:"breed"`
-	ImageID          sql.NullInt64  `json:"image_id"`
+	ImageUrl         sql.NullString `json:"image_url"`
 	MedicalCondition sql.NullString `json:"medical_condition"`
 	CreatedAt        time.Time      `json:"created_at"`
 	UpdatedAt        sql.NullTime   `json:"updated_at"`
@@ -41,11 +38,22 @@ type Post struct {
 	Title      sql.NullString `json:"title"`
 	Body       sql.NullString `json:"body"`
 	UserID     int64          `json:"user_id"`
-	ImageID    sql.NullInt64  `json:"image_id"`
+	ImageUrl   sql.NullString `json:"image_url"`
 	Status     sql.NullString `json:"status"`
 	LikesCount int32          `json:"likes_count"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  sql.NullTime   `json:"updated_at"`
+}
+
+type Session struct {
+	ID           uuid.UUID `json:"id"`
+	UserID       int64     `json:"user_id"`
+	RefreshToken string    `json:"refresh_token"`
+	UserAgent    string    `json:"user_agent"`
+	ClientIp     string    `json:"client_ip"`
+	IsBlocked    bool      `json:"is_blocked"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type User struct {
@@ -56,7 +64,7 @@ type User struct {
 	City           sql.NullString `json:"city"`
 	State          sql.NullString `json:"state"`
 	Country        sql.NullString `json:"country"`
-	ImageID        sql.NullInt64  `json:"image_id"`
+	ImageUrl       sql.NullString `json:"image_url"`
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      sql.NullTime   `json:"updated_at"`
 }

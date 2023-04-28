@@ -1,9 +1,3 @@
-
-CREATE TABLE images (
-    id bigserial PRIMARY KEY,
-    url varchar(500) NOT NULL
-);
-
 CREATE TABLE users (
   id bigserial PRIMARY KEY,
   email VARCHAR(100) UNIQUE NOT NULL,
@@ -12,7 +6,7 @@ CREATE TABLE users (
   city VARCHAR(50),
   state VARCHAR(50),
   country VARCHAR(50),
-  image_id bigint REFERENCES images(id),
+  image_url varchar(500),
   created_at timestamptz NOT NULL DEFAULT (now()),
   updated_at TIMESTAMP
 );
@@ -26,7 +20,7 @@ CREATE TABLE pets (
     gender varchar(20) NOT NULL,
     pet_type varchar(50) NOT NULL,
     breed varchar(50),
-    image_id bigint REFERENCES images(id),
+    image_url varchar(500),
     medical_condition varchar(50),
     created_at timestamptz NOT NULL DEFAULT (now()),
     updated_at TIMESTAMP
@@ -37,7 +31,7 @@ CREATE TABLE posts (
     title varchar(100),
     body text,
     user_id bigint REFERENCES users(id) NOT NULL,
-    image_id bigint REFERENCES images(id),
+    image_url varchar(500),
     status varchar(20),
     likes_count integer NOT NULL DEFAULT 0 CHECK (likes_count >= 0),
     created_at timestamptz NOT NULL DEFAULT (now()),

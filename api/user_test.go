@@ -73,6 +73,9 @@ func TestRegisterUserAPI(t *testing.T) {
 					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
 					Times(1).
 					Return(user, nil)
+
+				store.EXPECT().CreateSession(gomock.Any(), gomock.Any()).Times(1)
+
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -206,6 +209,8 @@ func TestLoginUserAPI(t *testing.T) {
 					GetUser(gomock.Any(), gomock.Eq(user.Email)).
 					Times(1).
 					Return(user, nil)
+
+				store.EXPECT().CreateSession(gomock.Any(), gomock.Any()).Times(1)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -316,11 +321,11 @@ func TestUpdateUser(t *testing.T) {
 		{
 			name: "OK",
 			body: gin.H{
-				"full_name":  user.FullName.String,
-				"city":       user.City.String,
-				"state":      user.State.String,
-				"country":    user.Country.String,
-				"image_name": nil,
+				"full_name": user.FullName.String,
+				"city":      user.City.String,
+				"state":     user.State.String,
+				"country":   user.Country.String,
+				"image_url": user.ImageUrl.String,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -329,10 +334,10 @@ func TestUpdateUser(t *testing.T) {
 				arg := db.UpdateUserParams{
 					ID:       user.ID,
 					FullName: user.FullName,
-					ImageID:  user.ImageID,
 					City:     user.City,
 					State:    user.State,
 					Country:  user.Country,
+					ImageUrl: user.ImageUrl,
 				}
 				action.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Eq(arg)).
@@ -341,7 +346,6 @@ func TestUpdateUser(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-				// requireBodyMatchUser(t, recorder.Body, user)
 			},
 		},
 		{
@@ -359,28 +363,27 @@ func TestUpdateUser(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
-				// requireBodyMatchUser(t, recorder.Body, user)
 			},
 		},
-		{
-			name: "pqviolation",
-			body: gin.H{
-				"image_id": 1,
-			},
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
-			},
-			buildStubs: func(action *mockdb.MockAction) {
-				action.EXPECT().
-					UpdateUser(gomock.Any(), gomock.Any()).
-					Times(1).
-					Return(db.User{}, &pq.Error{Code: "23505"})
-			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusForbidden, recorder.Code)
-				// requireBodyMatchUser(t, recorder.Body, user)
-			},
-		},
+		// {
+		// 	name: "pqviolation",
+		// 	body: gin.H{
+		// 		"image_url": 1,
+		// 	},
+		// 	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+		// 	},
+		// 	buildStubs: func(action *mockdb.MockAction) {
+		// 		action.EXPECT().
+		// 			UpdateUser(gomock.Any(), gomock.Any()).
+		// 			Times(1).
+		// 			Return(db.User{}, &pq.Error{Code: "23505"})
+		// 	},
+		// 	checkResponse: func(recorder *httptest.ResponseRecorder) {
+		// 		require.Equal(t, http.StatusForbidden, recorder.Code)
+		// 		// requireBodyMatchUser(t, recorder.Body, user)
+		// 	},
+		// },
 	}
 
 	for i := range testCases {
@@ -488,6 +491,7 @@ func randomUser(t *testing.T) (user db.User, password string) {
 	require.NoError(t, err)
 
 	user = db.User{
+		ID:             util.RandomInt(1, 1000),
 		Email:          util.RandEmail(),
 		HashedPassword: hashedPassword,
 	}
@@ -495,7 +499,6 @@ func randomUser(t *testing.T) (user db.User, password string) {
 }
 
 func updateRandomUser(t *testing.T) (user db.User) {
-	user, _ = randomUser(t)
 	hashedPassword, err := util.HashPassword("123456789")
 	require.NoError(t, err)
 
@@ -506,20 +509,7 @@ func updateRandomUser(t *testing.T) (user db.User) {
 		City:           sql.NullString{String: util.RandomString(10), Valid: true},
 		State:          sql.NullString{String: util.RandomString(10), Valid: true},
 		Country:        sql.NullString{String: util.RandomString(10), Valid: true},
-		ImageID:        sql.NullInt64{Int64: 0, Valid: true},
+		ImageUrl:       sql.NullString{String: util.RandomImageUrl(), Valid: true},
 	}
 	return
 }
-
-// func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
-// 	data, err := ioutil.ReadAll(body)
-// 	require.NoError(t, err)
-
-// 	var gotUser db.User
-// 	err = json.Unmarshal(data, &gotUser)
-
-// 	require.NoError(t, err)
-// 	require.Equal(t, user.Email, gotUser.Email)
-// 	require.Equal(t, user.FullName, gotUser.FullName)
-// 	require.Empty(t, gotUser.HashedPassword)
-// }

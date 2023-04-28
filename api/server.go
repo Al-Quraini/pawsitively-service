@@ -34,14 +34,34 @@ func NewServer(config util.Config, action db.Action) (*Server, error) {
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
+	router.SetTrustedProxies(nil)
 
+	// authentication
 	router.POST("/users/register", server.registerUser)
 	router.POST("/users/login", server.loginUser)
+	router.POST("/tokens/renew_access", server.renewAccessToken)
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
+	// user
 	authRoutes.PUT("/users/update", server.updateUser)
 	authRoutes.DELETE("/users/delete", server.deleteUser)
+
+	// pet
+	authRoutes.POST("/users/pets/create", server.createNewPet)
+	authRoutes.GET("/users/pets", server.getPets)
+	authRoutes.GET("/users/pets/:id", server.getPetById)
+	authRoutes.PUT("/users/pets/update", server.updatePet)
+	authRoutes.DELETE("/users/pets/delete", server.deletePet)
+
+	// post
+	authRoutes.POST("/posts/create", server.createPost)
+	router.GET("/posts/:id", server.getPost)
+	router.GET("/posts", server.listPosts)
+	router.GET("/users/:user_id/posts", server.listPostsByUserID)
+	authRoutes.PUT("/posts/update", server.updatePost)
+	authRoutes.DELETE("/posts/delete", server.deletePost)
+
 	server.router = router
 
 }
