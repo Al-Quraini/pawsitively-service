@@ -10,6 +10,7 @@ import (
 
 	db "github.com/alquraini/pawsitively/db/sqlc"
 	gomock "github.com/golang/mock/gomock"
+	uuid "github.com/google/uuid"
 )
 
 // MockAction is a mock of Action interface.
@@ -78,6 +79,21 @@ func (m *MockAction) CreatePost(arg0 context.Context, arg1 db.CreatePostParams) 
 func (mr *MockActionMockRecorder) CreatePost(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePost", reflect.TypeOf((*MockAction)(nil).CreatePost), arg0, arg1)
+}
+
+// CreateSession mocks base method.
+func (m *MockAction) CreateSession(arg0 context.Context, arg1 db.CreateSessionParams) (db.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSession", arg0, arg1)
+	ret0, _ := ret[0].(db.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSession indicates an expected call of CreateSession.
+func (mr *MockActionMockRecorder) CreateSession(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSession", reflect.TypeOf((*MockAction)(nil).CreateSession), arg0, arg1)
 }
 
 // CreateUser mocks base method.
@@ -224,6 +240,21 @@ func (m *MockAction) GetPost(arg0 context.Context, arg1 int64) (db.Post, error) 
 func (mr *MockActionMockRecorder) GetPost(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPost", reflect.TypeOf((*MockAction)(nil).GetPost), arg0, arg1)
+}
+
+// GetSession mocks base method.
+func (m *MockAction) GetSession(arg0 context.Context, arg1 uuid.UUID) (db.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSession", arg0, arg1)
+	ret0, _ := ret[0].(db.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSession indicates an expected call of GetSession.
+func (mr *MockActionMockRecorder) GetSession(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSession", reflect.TypeOf((*MockAction)(nil).GetSession), arg0, arg1)
 }
 
 // GetUser mocks base method.

@@ -6,12 +6,15 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
 	CreateLike(ctx context.Context, arg CreateLikeParams) (Like, error)
 	CreatePet(ctx context.Context, arg CreatePetParams) (Pet, error)
 	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteLike(ctx context.Context, arg DeleteLikeParams) error
 	DeletePet(ctx context.Context, id int64) error
@@ -22,6 +25,7 @@ type Querier interface {
 	GetPetById(ctx context.Context, id int64) (Pet, error)
 	GetPets(ctx context.Context, userID int64) ([]Pet, error)
 	GetPost(ctx context.Context, id int64) (Post, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	ListPosts(ctx context.Context, arg ListPostsParams) ([]Post, error)
